@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coach Claude</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+    /* PIN screen */
+    .pin-screen { text-align: center; }
+    .pin-screen h1 { font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .pin-screen p { font-size: 0.85rem; color: #666; margin-bottom: 24px; }
+    .pin-input { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; color: #fff; font-size: 1.8rem; letter-spacing: 12px; text-align: center; padding: 14px 20px; width: 180px; outline: none; -webkit-text-security: disc; }
+    .pin-input:focus { border-color: #3b82f6; }
+    .pin-error { color: #f87171; font-size: 0.8rem; margin-top: 10px; min-height: 1.2em; }
+
+    /* Week listing */
+    .app { display: none; max-width: 600px; width: 100%; padding: 24px; }
+    .app.visible { display: block; }
+    .app h1 { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .app .subtitle { color: #666; font-size: 0.85rem; margin-bottom: 24px; }
+    .week-list { list-style: none; }
+    .week-list li { margin-bottom: 8px; }
+    .week-list a { display: block; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 14px 18px; text-decoration: none; color: #e0e0e0; transition: border-color 0.15s; }
+    .week-list a:hover { border-color: #3b82f6; }
+    .week-title { font-weight: 600; font-size: 0.95rem; color: #fff; }
+    .week-meta { font-size: 0.8rem; color: #666; margin-top: 2px; }
+    .current-badge { display: inline-block; background: #1a3a2a; color: #4ade80; font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 8px; margin-left: 8px; vertical-align: middle; }
+    .week-list .current a { border-color: #3b82f6; }
+    .app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; margin-bottom: 20px; border-bottom: 1px solid #2a2a2a; }
+    .app-header h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
+    .logout { font-size: 0.75rem; color: #555; cursor: pointer; }
+    .logout:hover { color: #888; }
+    .empty { color: #555; font-size: 0.9rem; padding: 40px 0; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <!-- PIN gate -->
+  <div class="pin-screen" id="pin-screen">
+    <h1>Coach Claude</h1>
+    <p>Enter PIN to continue</p>
+    <input type="tel" class="pin-input" id="pin-input" maxlength="4" autofocus>
+    <div class="pin-error" id="pin-error"></div>
+  </div>
+
+  <!-- Week listing -->
+  <div class="app" id="app">
+    <div class="app-header">
+      <h1>Coach Claude</h1>
+      <span class="logout" id="logout">Lock</span>
+    </div>
+    <div class="subtitle">Weekly Training Plans</div>
+    <ul class="week-list" id="week-list"></ul>
+  </div>
+
+  <script>
+    const PIN = '1083';
+    const STORAGE_KEY = 'coachclaude_pin';
+
+    const pinScreen = document.getElementById('pin-screen');
+    const pinInput = document.getElementById('pin-input');
+    const pinError = document.getElementById('pin-error');
+    const app = document.getElementById('app');
+    const weekList = document.getElementById('week-list');
+
+    function unlock() {
+      pinScreen.style.display = 'none';
+      app.classList.add('visible');
+      loadWeeks();
+    }
+
+    function lock() {
+      localStorage.removeItem(STORAGE_KEY);
+      app.classList.remove('visible');
+      pinScreen.style.display = '';
+      pinInput.value = '';
+      pinError.textContent = '';
+      pinInput.focus();
+    }
+
+    // Check stored PIN
+    if (localStorage.getItem(STORAGE_KEY) === PIN) {
+      unlock();
+    }
+
+    pinInput.addEventListener('input', function() {
+      pinError.textContent = '';
+      if (this.value.length === 4) {
+        if (this.value === PIN) {
+          localStorage.setItem(STORAGE_KEY, PIN);
+          unlock();
+        } else {
+          pinError.textContent = 'Wrong PIN';
+          this.value = '';
+        }
+      }
+    });
+
+    document.getElementById('logout').addEventListener('click', lock);
+
+    function currentISOWeek() {
+      const now = new Date();
+      const jan4 = new Date(now.getFullYear(), 0, 4);
+      const daysSinceJan4 = Math.floor((now - jan4) / 86400000);
+      const weekNum = Math.ceil((daysSinceJan4 + jan4.getDay() + 1) / 7);
+      return now.getFullYear() + '-W' + String(weekNum).padStart(2, '0');
+    }
+
+    function createWeekItem(w, isCurrent) {
+      const li = document.createElement('li');
+      if (isCurrent) li.className = 'current';
+
+      const a = document.createElement('a');
+      a.href = 'weekly/' + encodeURIComponent(w.week) + '.html';
+
+      const title = document.createElement('div');
+      title.className = 'week-title';
+      title.textContent = w.label;
+
+      if (isCurrent) {
+        const badge = document.createElement('span');
+        badge.className = 'current-badge';
+        badge.textContent = 'CURRENT';
+        title.appendChild(badge);
+      }
+
+      const meta = document.createElement('div');
+      meta.className = 'week-meta';
+      meta.textContent = w.phase || '';
+
+      a.appendChild(title);
+      a.appendChild(meta);
+      li.appendChild(a);
+      return li;
+    }
+
+    async function loadWeeks() {
+      try {
+        const resp = await fetch('weeks.json');
+        const weeks = await resp.json();
+        const current = currentISOWeek();
+
+        weeks.sort(function(a, b) { return b.week.localeCompare(a.week); });
+
+        weekList.replaceChildren();
+
+        if (weeks.length === 0) {
+          const empty = document.createElement('li');
+          empty.className = 'empty';
+          empty.textContent = 'No weekly plans yet.';
+          weekList.appendChild(empty);
+          return;
+        }
+
+        weeks.forEach(function(w) {
+          weekList.appendChild(createWeekItem(w, w.week === current));
+        });
+      } catch (e) {
+        weekList.replaceChildren();
+        const err = document.createElement('li');
+        err.className = 'empty';
+        err.textContent = 'Could not load weeks.';
+        weekList.appendChild(err);
+      }
+    }
+  </script>
+</body>
+</html>
