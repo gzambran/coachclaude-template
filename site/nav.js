@@ -1,6 +1,6 @@
 /* Coach Claude shared navigation — include in weekly pages via <script src="../nav.js"></script> */
 (function () {
-  var PIN = '1083';
+  var PIN = '0000';
   var STORAGE_KEY = 'coachclaude_pin';
 
   /* PIN gate — redirect to index if not authenticated */
