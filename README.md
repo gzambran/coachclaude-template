@@ -69,7 +69,7 @@ To view your weekly plan from your phone:
 1. Create a Vercel account at https://vercel.com
 2. Import this repo
 3. Set **Root Directory** to `site` in project settings
-4. Update the PIN in `site/index.html` and `site/nav.js` (default is `1083`)
+4. Update the PIN in `site/config.js` (default is `0000`)
 5. Push to deploy
 
 ## Project Structure
@@ -85,9 +85,11 @@ To view your weekly plan from your phone:
 │   └── fetch_strava.py    # Incremental Strava fetcher with cache
 ├── site/                  # Vercel-deployed web pages
 │   ├── index.html         # PIN gate + week listing
-│   ├── nav.js             # Shared navigation bar
+│   ├── config.js          # Shared PIN config (change PIN here)
+│   ├── nav.js             # Shared navigation + today highlighting
 │   ├── weeks.json         # Week manifest
 │   └── weekly/            # Weekly plan HTML files
+│       └── EXAMPLE.html   # Structural reference for Claude
 ├── vercel.json            # Vercel configuration
 └── .env                   # Strava API credentials (not committed)
 ```
