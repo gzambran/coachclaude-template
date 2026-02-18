@@ -402,6 +402,8 @@ def check_weekly_rollover(cache: dict) -> Optional[str]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Fetch Strava activities incrementally")
     parser.add_argument("--force", action="store_true", help="Re-fetch all activities (ignore cache)")
+    parser.add_argument("--history", nargs="?", const=180, type=int, metavar="DAYS",
+                        help="Fetch training history (default: 180 days). Use for initial setup or after a long break.")
     args = parser.parse_args()
 
     # Load credentials
@@ -418,12 +420,14 @@ def main() -> None:
     # Load cache
     cache = load_cache()
 
-    if args.force:
+    if args.force or args.history:
         cache = {}
 
     # Determine fetch window
     most_recent = get_most_recent_timestamp(cache)
-    if most_recent is None:
+    if args.history:
+        after_epoch = int((datetime.now() - timedelta(days=args.history)).timestamp())
+    elif most_recent is None:
         # First run or force: backfill last 14 days
         after_epoch = int((datetime.now() - timedelta(days=BACKFILL_DAYS)).timestamp())
     else:
@@ -452,7 +456,9 @@ def main() -> None:
 
     # Status output
     parts = []
-    if added > 0:
+    if args.history:
+        parts.append(f"Fetched {added} {'activity' if added == 1 else 'activities'} from the last {args.history} days.")
+    elif added > 0:
         parts.append(f"Fetched {added} new {'activity' if added == 1 else 'activities'}.")
     else:
         parts.append("No new activities.")
