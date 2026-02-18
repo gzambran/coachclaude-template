@@ -1,4 +1,3 @@
 {
-  "buildCommand": "",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- site/"
+  "buildCommand": ""
 }
