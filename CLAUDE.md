@@ -140,7 +140,7 @@ In addition to the markdown summary, generate a visual weekly plan as `site/week
 - Week title, date range, and current phase badge
 - Target cards (run miles, runs, rest days, etc.)
 - Day-by-day cards with session details, time-of-day, and coaching notes
-- Mark the current day with a "TODAY" badge and blue border
+- Today highlighting is handled automatically by `nav.js` — do NOT hardcode the `today` class or TODAY badge in the HTML
 - Mark completed sessions with strikethrough styling
 - Coach's Notes section at the bottom
 - `<script src="../nav.js"></script>` before `</body>` — this adds the shared nav bar. Do NOT add navigation elements in the HTML itself.
@@ -148,6 +148,16 @@ In addition to the markdown summary, generate a visual weekly plan as `site/week
 Use a dark-mode aesthetic consistent with the site's existing style.
 
 Update the HTML mid-week during check-ins to mark completed sessions and adjust remaining days if the plan changed.
+
+## Deploying Changes
+
+The site is hosted on Vercel and deploys from the `main` branch on GitHub. After generating or updating any HTML, JS, or site files, commit and push to deploy:
+
+```bash
+git add <changed files> && git commit -m "message" && git push
+```
+
+Do NOT open local HTML files — the athlete views the site on Vercel.
 
 ## Updating status.md
 

@@ -39,4 +39,25 @@
     '#cc-nav-lock { color: #555; font-size: 0.75rem; cursor: pointer; }' +
     '#cc-nav-lock:hover { color: #888; }';
   document.head.appendChild(style);
+
+  /* Auto-highlight today's card */
+  var now = new Date();
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var todayStr = months[now.getMonth()] + ' ' + now.getDate();
+  document.querySelectorAll('.day').forEach(function (card) {
+    card.classList.remove('today');
+    var badge = card.querySelector('.today-badge');
+    if (badge) badge.remove();
+    var dateEl = card.querySelector('.day-date');
+    if (dateEl && dateEl.textContent.trim() === todayStr) {
+      card.classList.add('today');
+      var nameEl = card.querySelector('.day-name');
+      if (nameEl) {
+        var b = document.createElement('span');
+        b.className = 'today-badge';
+        b.textContent = 'TODAY';
+        nameEl.after(b);
+      }
+    }
+  });
 })();
